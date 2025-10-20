@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>Secret Gallery</title>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        background-color: #000;
+        color: #00ffe0;
+        overflow: hidden; /* приховати скрол при анімації фону */
+    }
+
+    /* Полотно для ефекту "Матриці" */
+    canvas#matrix {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0; /* позаду всього */
+        background: #000;
+    }
+
+    h1 {
+        text-shadow: 0 0 10px #00ffe0;
+        margin-top: 20px;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    .gallery {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 20px;
+        justify-content: center;
+        position: relative;
+        z-index: 1; /* над фоном */
+    }
+
+    .gallery img {
+        height: 250px;
+        width: auto;
+        border: 2px solid #00ffe0;
+        border-radius: 5px;
+        box-shadow: 0 0 10px #00ffe0;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+    .gallery img:hover {
+        transform: scale(1.1);
+    }
+
+    h2 {
+        text-shadow: 0 0 10px #00ffe0;
+        margin-top: 20px;
+        text-align: center;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Лайтбокс */
+    #lightbox {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.95);
+        z-index: 2;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #lightbox img {
+        max-width: 90%;
+        max-height: 90%;
+        display: block;
+        border: 2px solid #00ffe0;
+        border-radius: 5px;
+        box-shadow: 0 0 15px #00ffe0;
+        margin: auto;
+    }
+</style>
+</head>
+<body>
+
+<!-- Фон "Матриця" -->
+<canvas id="matrix"></canvas>
+
+<h1>Secret Gallery</h1>
+
+{% if empty %}
+    <h2>Gallery empty</h2>
+{% else %}
+    <div class="gallery">
+        {% for photo in photos %}
+            <img src="{{ photo }}" alt="Фото" onclick="openLightbox(event, '{{ photo }}')">
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div id="lightbox" onclick="closeLightbox()">
+    <img id="lightbox-img" src="" onclick="event.stopPropagation()">
+</div>
+
+<script>
+function openLightbox(event, src) {
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightbox-img');
+    lbImg.src = src;
+    lb.style.display = 'flex';
+    event.stopPropagation();
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+}
+
+/* --- Ефект Матриці --- */
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()あいうえおアイウエオ";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const drops = Array(Math.floor(columns)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#00ffe0";
+    ctx.font = fontSize + "px monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
+        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+            drops[i] = 0;
+        }
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 50);
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+</script>
+
+</body>
+</html>
